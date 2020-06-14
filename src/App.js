@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-
+import ProductItem from './ProductItem'
+import AddProduct from './AddProduct'
 import './App.css';
 
 const products = [
@@ -26,13 +27,49 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.getProducts()
+    const products = this.getProducts()
+    this.setState( { products } )
   }
 
   getProducts = () => {
-    const products = JSON.parse(localStorage.getItem('products'))
-    console.log('Here are the products:', products)
-    this.setState( { products } )
+    return JSON.parse(localStorage.getItem('products'))
+   
+    
+  }
+
+  onDelete = name => {
+    const products = this.getProducts()
+    const filteredProducts = products.filter( product => {
+      return product.name !== name
+    } )
+
+    this.setState({
+      products: filteredProducts
+    })
+  }
+
+  onAdd = ( name, price ) => {
+    //console.log( `name is: ${name}, price is: ${price}` )
+    const products = this.getProducts()
+    products.push({
+      name,
+      price
+    })
+    this.setState({ products })
+  }
+
+  onEditSubmit = ( name, price, originalName ) => {
+    let products = this.getProducts()
+    products = products.map( product => {
+      if (product.name === originalName) {
+        product.name = name;
+        product.price = price
+      }
+      return product
+    } )
+
+    this.setState({ products })
+    
   }
 
 
@@ -40,16 +77,19 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <AddProduct onAdd={ this.onAdd } />
         <h1>Products Manager</h1>
         {
           this.state.products.map( product => {
               return (
-                <div key={ product.id }>
-                  <span>{ product.name }</span>
-                   {` \ `}
-                   <span>{ product.price }</span>
-                   {` | `}
-                </div>
+               <ProductItem
+                 key={ product.id }
+                //  name={ product.name } 
+                //  price={ product.price }
+                { ...product }
+                onDelete={ this.onDelete }
+                onEditSubmit={ this.onEditSubmit }
+               />
               )
           } )
         }
